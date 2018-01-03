@@ -1,5 +1,6 @@
 // Load required modules
-var http    = require("http");              // http server core module
+var http    = require("https");              // http server core module
+var fs      = require("fs");        // file system core module
 var express = require("express");           // web framework external module
 var serveStatic = require('serve-static');  // serve static files
 var socketIo = require("socket.io");        // web socket external module
@@ -12,9 +13,13 @@ process.title = "node-easyrtc";
 var app = express();
 app.use(serveStatic('static', {'index': ['index.html']}));
 
-// Start Express http server on port 8080
-var webServer = http.createServer(app).listen(8080);
-
+// Start Express http server on port 443
+var webServer = http.createServer(
+{
+    key:  fs.readFileSync("/etc/letsencrypt/live/babylon-project.pro/privkey.pem"),
+    cert: fs.readFileSync("/etc/letsencrypt/live/babylon-project.pro/cert.pem")
+},
+app).listen(443);
 // Start Socket.io so it attaches itself to Express server
 var socketServer = socketIo.listen(webServer, {"log level":1});
 
@@ -53,7 +58,7 @@ var rtc = easyrtc.listen(app, socketServer, null, function(err, rtcRef) {
     });
 });
 
-//listen on port 8080
-webServer.listen(8080, function () {
+//listen on port 443
+webServer.listen(443, function () {
     console.log('listening on http://localhost:8080');
 });
